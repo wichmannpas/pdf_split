@@ -9,6 +9,8 @@ def split_pdf_pages(args: argparse.Namespace):
     """Split pages of a pdf."""
     source = args.source
     target = args.target
+    margin = args.margin
+    split_count = args.splits
 
     with open(source, 'rb') as source_file, open(target, 'wb') as target_file:
         in_pdf = PdfFileReader(source_file)
@@ -26,24 +28,26 @@ def split_pdf_pages(args: argparse.Namespace):
 
             width = page.mediaBox.upperRight[0]
             height = page.mediaBox.upperRight[1]
+            cut_height = height // split_count
 
-            first_half = copy(page)
-            first_half.mediaBox = copy(first_half.mediaBox)
-            second_half = copy(page)
-            second_half.mediaBox = copy(second_half.mediaBox)
+            for split_num in range(split_count):
+                split_page = copy(page)
+                split_page.mediaBox = copy(page.mediaBox)
 
-            cut_point = height // 2
+                split_page.mediaBox.upperLeft = (
+                    0,
+                    margin + height - cut_height * split_num)
+                split_page.mediaBox.upperRight = (
+                    width,
+                    margin + height - cut_height * split_num)
+                split_page.mediaBox.lowerLeft = (
+                    0,
+                    height - cut_height * (1 + split_num) - margin)
+                split_page.mediaBox.lowerRight = (
+                    width,
+                    height - cut_height * (1 + split_num) - margin)
 
-            # upper half
-            first_half.mediaBox.lowerLeft = 0, cut_point - 10
-            first_half.mediaBox.lowerRight = width, cut_point - 10
-
-            # lower half
-            second_half.mediaBox.upperLeft = 0, cut_point + 10
-            second_half.mediaBox.upperRight = width, cut_point + 10
-
-            out_pdf.addPage(first_half)
-            out_pdf.addPage(second_half)
+                out_pdf.addPage(split_page)
 
         out_pdf.write(target_file)
 
@@ -52,5 +56,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('source')
     parser.add_argument('target')
+    parser.add_argument('--margin', help='additional margin per split',
+                        type=int, default=10)
+    parser.add_argument('--splits', help='number of splits per page', type=int,
+                        default=2)
     args = parser.parse_args()
     split_pdf_pages(args)
