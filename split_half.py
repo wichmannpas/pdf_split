@@ -17,7 +17,7 @@ def split_pdf_pages(args: argparse.Namespace):
         out_pdf = PdfFileWriter()
 
         # add first page untouched
-        first_page = in_pdf.getPage(1)
+        first_page = in_pdf.getPage(0)
         out_pdf.addPage(first_page)
 
         # split all following pages by half and add both halfs
