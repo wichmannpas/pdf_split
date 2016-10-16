@@ -21,3 +21,7 @@ To split all pages except for the title page in three parts:
 To split all pages except for the title page in four parts and use a margin of 20:
 
     ./split.py example.pdf example.splitted.pdf --splits 4 --margin 20
+
+To get all available parameters, use:
+
+    ./split.py --help
