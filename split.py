@@ -36,16 +36,17 @@ def split_pdf_pages(args: argparse.Namespace):
 
                 split_page.mediaBox.upperLeft = (
                     0,
-                    margin + height - cut_height * split_num)
+                    min(height, margin + height - cut_height * split_num))
                 split_page.mediaBox.upperRight = (
                     width,
-                    margin + height - cut_height * split_num)
+                    min(height, margin + height - cut_height * split_num))
                 split_page.mediaBox.lowerLeft = (
                     0,
-                    height - cut_height * (1 + split_num) - margin)
+                    max(0, height - cut_height * (1 + split_num) - margin))
                 split_page.mediaBox.lowerRight = (
                     width,
-                    height - cut_height * (1 + split_num) - margin)
+                    max(0, height - cut_height * (1 + split_num) - margin))
+                split_page.cropBox = split_page.mediaBox
 
                 out_pdf.addPage(split_page)
 
