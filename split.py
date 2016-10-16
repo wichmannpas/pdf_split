@@ -11,6 +11,10 @@ def split_pdf_pages(args: argparse.Namespace):
     target = args.target
     margin = args.margin
     split_count = args.splits
+    crop_left = args.crop_left
+    crop_top = args.crop_top
+    crop_right = args.crop_right
+    crop_bottom = args.crop_bottom
 
     with open(source, 'rb') as source_file, open(target, 'wb') as target_file:
         in_pdf = PdfFileReader(source_file)
@@ -26,26 +30,32 @@ def split_pdf_pages(args: argparse.Namespace):
         for page_number in range(2, page_count):
             page = in_pdf.getPage(page_number)
 
-            width = page.mediaBox.upperRight[0]
-            height = page.mediaBox.upperRight[1]
+            actual_width = page.mediaBox.upperRight[0]
+            actual_height = page.mediaBox.upperRight[1]
+            width = actual_width - crop_left - crop_right
+            height = actual_height - crop_top - crop_bottom
             cut_height = height // split_count
 
             for split_num in range(split_count):
                 split_page = copy(page)
                 split_page.mediaBox = copy(page.mediaBox)
 
-                split_page.mediaBox.upperLeft = (
-                    0,
-                    min(height, margin + height - cut_height * split_num))
-                split_page.mediaBox.upperRight = (
-                    width,
-                    min(height, margin + height - cut_height * split_num))
-                split_page.mediaBox.lowerLeft = (
-                    0,
-                    max(0, height - cut_height * (1 + split_num) - margin))
-                split_page.mediaBox.lowerRight = (
-                    width,
-                    max(0, height - cut_height * (1 + split_num) - margin))
+                left_x = crop_left
+                right_x = width + crop_left
+
+                upper_y = min(
+                    crop_bottom + height,
+                    crop_bottom + margin + height - cut_height * split_num)
+                lower_y = max(
+                    crop_bottom,
+                    crop_bottom - margin + height - cut_height * (
+                        1 + split_num))
+
+                split_page.mediaBox.upperLeft = left_x, upper_y
+                split_page.mediaBox.upperRight = right_x, upper_y
+                split_page.mediaBox.lowerLeft = left_x, lower_y
+                split_page.mediaBox.lowerRight = right_x, lower_y
+
                 split_page.cropBox = split_page.mediaBox
 
                 out_pdf.addPage(split_page)
@@ -61,5 +71,13 @@ if __name__ == '__main__':
                         type=int, default=10)
     parser.add_argument('--splits', help='number of splits per page', type=int,
                         default=2)
+    parser.add_argument('--crop-left', type=int, default=0,
+                        help='Additional margin to crop an all pages')
+    parser.add_argument('--crop-top', type=int, default=0,
+                        help='Additional margin to crop an all pages')
+    parser.add_argument('--crop-right', type=int, default=0,
+                        help='Additional margin to crop an all pages')
+    parser.add_argument('--crop-bottom', type=int, default=0,
+                        help='Additional margin to crop an all pages')
     args = parser.parse_args()
     split_pdf_pages(args)
