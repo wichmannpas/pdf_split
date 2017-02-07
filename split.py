@@ -80,4 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('--crop-bottom', type=int, default=0,
                         help='Additional margin to crop an all pages')
     args = parser.parse_args()
+    if args.splits < 1:
+        parser.error('argument --splits: invalid choice: '
+                     'split count may not be zero.')
     split_pdf_pages(args)
