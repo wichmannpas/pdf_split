@@ -7,16 +7,7 @@ from PyPDF2 import PdfFileReader, PdfFileWriter
 
 def split_pdf_pages(args: argparse.Namespace):
     """Split pages of a pdf."""
-    source = args.source
-    target = args.target
-    margin = args.margin
-    split_count = args.splits
-    crop_left = args.crop_left
-    crop_top = args.crop_top
-    crop_right = args.crop_right
-    crop_bottom = args.crop_bottom
-
-    with open(source, 'rb') as source_file, open(target, 'wb') as target_file:
+    with open(args.source, 'rb') as source_file, open(args.target, 'wb') as target_file:
         in_pdf = PdfFileReader(source_file)
         page_count = in_pdf.getNumPages()
 
@@ -35,23 +26,23 @@ def split_pdf_pages(args: argparse.Namespace):
 
             actual_width = page.mediaBox.upperRight[0]
             actual_height = page.mediaBox.upperRight[1]
-            width = actual_width - crop_left - crop_right
-            height = actual_height - crop_top - crop_bottom
-            cut_height = height // split_count
+            width = actual_width - args.crop_left - args.crop_right
+            height = actual_height - args.crop_top - args.crop_bottom
+            cut_height = height // args.splits
 
-            for split_num in range(split_count):
+            for split_num in range(args.splits):
                 split_page = copy(page)
                 split_page.mediaBox = copy(page.mediaBox)
 
-                left_x = crop_left
-                right_x = width + crop_left
+                left_x = args.crop_left
+                right_x = width + args.crop_left
 
                 upper_y = min(
-                    crop_bottom + height,
-                    crop_bottom + margin + height - cut_height * split_num)
+                    args.crop_bottom + height,
+                    args.crop_bottom + args.margin + height - cut_height * split_num)
                 lower_y = max(
-                    crop_bottom,
-                    crop_bottom - margin + height - cut_height * (
+                    args.crop_bottom,
+                    args.crop_bottom - args.margin + height - cut_height * (
                         1 + split_num))
 
                 split_page.mediaBox.upperLeft = left_x, upper_y
