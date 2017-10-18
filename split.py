@@ -22,12 +22,15 @@ def split_pdf_pages(args: argparse.Namespace):
 
         out_pdf = PdfFileWriter()
 
-        # add first page untouched
-        first_page = in_pdf.getPage(0)
-        out_pdf.addPage(first_page)
+        first_split_page = 0
+        if not args.split_first_page:
+            # add first page untouched
+            first_page = in_pdf.getPage(0)
+            out_pdf.addPage(first_page)
+            first_split_page = 1
 
         # split all following pages by half and add both halfs
-        for page_number in range(1, page_count):
+        for page_number in range(first_split_page, page_count):
             page = in_pdf.getPage(page_number)
 
             actual_width = page.mediaBox.upperRight[0]
@@ -79,6 +82,8 @@ if __name__ == '__main__':
                         help='Additional margin to crop an all pages')
     parser.add_argument('--crop-bottom', type=int, default=0,
                         help='Additional margin to crop an all pages')
+    parser.add_argument('--split-first-page', action='store_true',
+                        help='Split the first page as well')
     args = parser.parse_args()
     if args.splits < 1:
         parser.error('argument --splits: invalid choice: '
