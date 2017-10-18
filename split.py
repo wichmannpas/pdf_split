@@ -27,7 +27,7 @@ def split_pdf_pages(args: argparse.Namespace):
         out_pdf.addPage(first_page)
 
         # split all following pages by half and add both halfs
-        for page_number in range(2, page_count):
+        for page_number in range(1, page_count):
             page = in_pdf.getPage(page_number)
 
             actual_width = page.mediaBox.upperRight[0]
